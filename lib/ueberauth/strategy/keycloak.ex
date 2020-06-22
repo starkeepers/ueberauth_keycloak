@@ -191,9 +191,14 @@ defmodule Ueberauth.Strategy.Keycloak do
     }
   end
 
+  @spec logout(Ueberauth.Auth.Credentials.t()) :: {:ok, OAuth2.Response} | {:error, any}
+  def logout(credentials) do
+    Ueberauth.Strategy.Keycloak.OAuth.logout(credentials)
+  end
+
   defp fetch_user(conn, token) do
     conn = put_private(conn, :keycloak_token, token)
-    api_ver = option(conn, :api_ver) || "v4"
+    _api_ver = option(conn, :api_ver) || "v4"
 
     case Ueberauth.Strategy.Keycloak.OAuth.get(
            token,

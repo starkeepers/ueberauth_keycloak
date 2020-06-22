@@ -16,6 +16,7 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
     authorize_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/auth",
     token_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/token",
     userinfo_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo",
+    logout_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/logout",
     token_method: :post
   ]
 
@@ -73,6 +74,20 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
     |> client
     |> put_param("access_token", token)
     |> OAuth2.Client.get(url, headers, opts)
+  end
+
+  def logout(credentials, headers \\ [], opts \\ []) do
+    logout_url = config() |> Keyword.get(:logout_url)
+    body = %{
+      client_id: client().client_id,
+      client_secret: client().client_secret,
+      refresh_token: credentials.refresh_token
+    }
+
+    [token: credentials.token]
+    |> client
+    |> put_header("Content-Type", "application/x-www-form-urlencoded")
+    |> post(logout_url, body, headers, opts)
   end
 
   def get_token!(params \\ [], options \\ []) do

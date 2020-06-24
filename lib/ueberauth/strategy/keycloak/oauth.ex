@@ -90,6 +90,32 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
     |> post(logout_url, body, headers, opts)
   end
 
+  # def refresh_token(token, params \\ [], headers \\ [], options \\ []) do
+  # # This has the same behaviour as below but is more opaque. Left commented
+  # # Until it can be understood why the new tokens are still expiring early.
+  #   [token: token]
+  #   |> client()
+  #   |> OAuth2.Client.refresh_token!(params, headers, options)
+  #   |> Map.get(:token)
+  # end
+
+  def refresh_token(credentials, headers \\ [], opts \\ []) do
+    token_url = config() |> Keyword.get(:token_url)
+    client = client()
+    body = %{
+      client_id: client.client_id,
+      client_secret: client.client_secret,
+      refresh_token: credentials.refresh_token,
+      grant_type: "refresh_token"
+    }
+
+    client
+    |> put_header("Content-Type", "application/x-www-form-urlencoded")
+    |> post(token_url, body, headers, opts)
+    |> (fn {:ok, %OAuth2.Response{body: body}} -> body end).()
+    |> OAuth2.AccessToken.new()
+  end
+
   def get_token!(params \\ [], options \\ []) do
     headers = Keyword.get(options, :headers, [])
     options = Keyword.get(options, :options, [])

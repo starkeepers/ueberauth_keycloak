@@ -145,8 +145,8 @@ defmodule Ueberauth.Strategy.Keycloak do
   @doc """
   Includes the credentials from the Keycloak response.
   """
-  def credentials(conn) do
-    token = conn.private.keycloak_token
+  def credentials(%Plug.Conn{private: %{keycloak_token: token}}), do: credentials(token)
+  def credentials(token) do
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, ",")
 
@@ -156,7 +156,26 @@ defmodule Ueberauth.Strategy.Keycloak do
       expires_at: token.expires_at,
       token_type: token.token_type,
       expires: !!token.expires_at,
-      scopes: scopes
+      scopes: scopes,
+      other: %{refresh_expires_at: refresh_expires_at(token)}
+    }
+  end
+
+  defp refresh_expires_at(%{other_params: %{"refresh_expires_in" => expires_in}}) do
+    OAuth2.Util.unix_now() + expires_in
+  end
+  defp refresh_expires_at(_), do: nil
+
+  @doc """
+  Turns Ueberauth credentials into an OAuth2 Access Token. Useful for requesting refresh tokens.
+  """
+  @spec ueberauth_to_oauth_token(Ueberauth.Auth.Credentials.t()) :: OAuth2.AccessToken.t()
+  def ueberauth_to_oauth_token(credentials) do
+    %OAuth2.AccessToken{
+      access_token: credentials.token,
+      refresh_token: credentials.refresh_token,
+      expires_at: credentials.expires_at,
+      token_type: credentials.token_type
     }
   end
 
@@ -194,6 +213,14 @@ defmodule Ueberauth.Strategy.Keycloak do
   @spec logout(Ueberauth.Auth.Credentials.t()) :: {:ok, OAuth2.Response} | {:error, any}
   def logout(credentials) do
     Ueberauth.Strategy.Keycloak.OAuth.logout(credentials)
+  end
+
+  @spec refresh_token(Ueberauth.Auth.Credentials.t()) :: Ueberauth.Auth.Credentials.t()
+  def refresh_token(old_credentials) do
+    old_credentials
+    |> ueberauth_to_oauth_token()
+    |> Ueberauth.Strategy.Keycloak.OAuth.refresh_token()
+    |> credentials()
   end
 
   defp fetch_user(conn, token) do

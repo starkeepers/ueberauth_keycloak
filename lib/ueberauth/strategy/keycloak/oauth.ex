@@ -139,6 +139,7 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
     |> put_param("client_id", client().client_id)
     |> put_param("client_secret", client().client_secret)
     |> put_param("grant_type", "authorization_code")
+    |> put_param("client_session_state", Keyword.get(params, :session_state))
     |> put_param("redirect_uri", client().redirect_uri)
     |> put_header("Accept", "application/json")
     |> OAuth2.Strategy.AuthCode.get_token(params, headers)

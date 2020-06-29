@@ -103,17 +103,19 @@ defmodule Ueberauth.Strategy.Keycloak do
   Handles the callback from Keycloak. When there is a failure from Keycloak the failure is included in the
   `ueberauth_failure` struct. Otherwise the information returned from Keycloak is returned in the `Ueberauth.Auth` struct.
   """
-  def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
+  def handle_callback!(%Plug.Conn{params: %{"code" => code, "session_state" => session_state}} = conn) do
     module = option(conn, :oauth2_module)
 
-    token = apply(module, :get_token!, [[code: code, redirect_uri: callback_url(conn)]])
+    token = apply(module, :get_token!, [[code: code, redirect_uri: callback_url(conn), session_state: session_state]])
 
     if token.access_token == nil do
       set_errors!(conn, [
         error(token.other_params["error"], token.other_params["error_description"])
       ])
     else
-      fetch_user(conn, token)
+      conn
+      |> fetch_user(token)
+      |> put_private(:backchannel_logout_code, session_state)
     end
   end
 

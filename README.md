@@ -1,18 +1,18 @@
-# Überauth Keycloak
+# Überauth RingCentral
 
-> Keycloak OAuth2 strategy for Überauth.
+> RingCentral OAuth2 strategy for Überauth.
 
 ## Acknowledgements
 
-This repository is based on the work of [mtchavez/ueberauth_keycloak](https://github.com/mtchavez/ueberauth_keycloak).
+This repository is based on the work of [mtchavez/ueberauth_ring_central](https://github.com/mtchavez/ueberauth_ring_central).
 
 ## Installation
 
-1. Add `:ueberauth_keycloak_strategy` to your list of dependencies in `mix.exs`:
+1. Add `:ueberauth_ring_central_strategy` to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
-      [{:ueberauth_keycloak_strategy, "~> 0.2"}]
+      [{:ueberauth_ring_central_strategy, "~> 0.2"}]
     end
     ```
 
@@ -20,26 +20,26 @@ This repository is based on the work of [mtchavez/ueberauth_keycloak](https://gi
 
     ```elixir
     def application do
-      [applications: [:ueberauth_keycloak_strategy]]
+      [applications: [:ueberauth_ring_central_strategy]]
     end
     ```
 
-1. Add Keycloak to your Überauth configuration:
+1. Add RingCentral to your Überauth configuration:
 
     ```elixir
     config :ueberauth, Ueberauth,
       providers: [
-        keycloak: {Ueberauth.Strategy.Keycloak, [default_scope: "read_user"]}
+        ring_central: {Ueberauth.Strategy.RingCentral, [default_scope: "read_user"]}
       ]
     ```
 
 1.  Update your provider configuration:
 
     ```elixir
-    config :ueberauth, Ueberauth.Strategy.Keycloak.OAuth,
-      client_id: System.get_env("KEYCLOAK_CLIENT_ID"),
-      client_secret: System.get_env("KEYCLOAK_CLIENT_SECRET"),
-      redirect_uri: System.get_env("KEYCLOAK_REDIRECT_URI")
+    config :ueberauth, Ueberauth.Strategy.RingCentral.OAuth,
+      client_id: System.get_env("RING_CENTRAL_CLIENT_ID"),
+      client_secret: System.get_env("RING_CENTRAL_CLIENT_SECRET"),
+      redirect_uri: System.get_env("RING_CENTRAL_REDIRECT_URI")
     ```
 
 1.  Include the Überauth plug in your controller:
@@ -69,24 +69,24 @@ This repository is based on the work of [mtchavez/ueberauth_keycloak](https://gi
 1. You controller needs to implement callbacks to deal with `Ueberauth.Auth` and `Ueberauth.Failure` responses.
 
 For an example implementation see the [Überauth Example][example-app] application
-on how to integrate other strategies. Adding Keycloak should be similar to Github.
+on how to integrate other strategies. Adding RingCentral should be similar to Github.
 
 ## Calling
 
 Depending on the configured url you can initial the request through:
 
-    /auth/keycloak
+    /auth/ring_central
 
 Or with options:
 
-    /auth/keycloak?scope=profile
+    /auth/ring_central?scope=profile
 
 
 ```elixir
 config :ueberauth, Ueberauth,
   providers: [
-    keycloak: {
-      Ueberauth.Strategy.Keycloak, [
+    ring_central: {
+      Ueberauth.Strategy.RingCentral, [
         default_scope: "profile"
       ]
     }
@@ -95,8 +95,8 @@ config :ueberauth, Ueberauth,
 
 ## Documentation
 
-The docs can be found at [ueberauth_keycloak][package-docs] on [Hex Docs][hex-docs].
+The docs can be found at [ueberauth_ring_central][package-docs] on [Hex Docs][hex-docs].
 
 [example-app]: https://github.com/ueberauth/ueberauth_example
 [hex-docs]: https://hexdocs.pm
-[package-docs]: https://hexdocs.pm/ueberauth_keycloak_strategy
+[package-docs]: https://hexdocs.pm/ueberauth_ring_central_strategy

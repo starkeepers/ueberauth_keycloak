@@ -1,25 +1,25 @@
-defmodule Ueberauth.Strategy.Keycloak do
+defmodule Ueberauth.Strategy.RingCentral do
   @moduledoc """
-  Provides an Ueberauth strategy for authenticating with Keycloak.
+  Provides an Ueberauth strategy for authenticating with RingCentral.
 
   ### Setup
 
-  Create an application in Keycloak for you to use.
+  Create an application in RingCentral for you to use.
 
-  Register a new application at: [your keycloak developer page](https://keycloak.com/settings/developers) and get the `client_id` and `client_secret`.
+  Register a new application at: [your ring_central developer page](https://ring_central.com/settings/developers) and get the `client_id` and `client_secret`.
 
   Include the provider in your configuration for Ueberauth
 
       config :ueberauth, Ueberauth,
         providers: [
-          keycloak: { Ueberauth.Strategy.Keycloak, [] }
+          ring_central: { Ueberauth.Strategy.RingCentral, [] }
         ]
 
-  Then include the configuration for keycloak.
+  Then include the configuration for ring_central.
 
-      config :ueberauth, Ueberauth.Strategy.Keycloak.OAuth,
-        client_id: System.get_env("KEYCLOAK_CLIENT_ID"),
-        client_secret: System.get_env("KEYCLOAK_CLIENT_SECRET")
+      config :ueberauth, Ueberauth.Strategy.RingCentral.OAuth,
+        client_id: System.get_env("RING_CENTRAL_CLIENT_ID"),
+        client_secret: System.get_env("RING_CENTRAL_CLIENT_SECRET")
 
   If you haven't already, create a pipeline and setup routes for your callback handler
 
@@ -54,7 +54,7 @@ defmodule Ueberauth.Strategy.Keycloak do
 
       config :ueberauth, Ueberauth,
         providers: [
-          keycloak: { Ueberauth.Strategy.Keycloak, [uid_field: :email] }
+          ring_central: { Ueberauth.Strategy.RingCentral, [uid_field: :email] }
         ]
 
   Default is `:id`
@@ -63,7 +63,7 @@ defmodule Ueberauth.Strategy.Keycloak do
 
       config :ueberauth, Ueberauth,
         providers: [
-          keycloak: { Ueberauth.Strategy.Keycloak, [default_scope: "api read_user read_registry", api_version: "v4"] }
+          ring_central: { Ueberauth.Strategy.RingCentral, [default_scope: "api read_user read_registry", api_version: "v4"] }
         ]
 
   Default is "api read_user read_registry"
@@ -71,21 +71,21 @@ defmodule Ueberauth.Strategy.Keycloak do
   require Logger
 
   use Ueberauth.Strategy,
-    uid_field: :id,
-    default_scope: "api read_user read_registry",
-    oauth2_module: Ueberauth.Strategy.Keycloak.OAuth
+    uid_field: :owner_id,
+    default_scope: nil,
+    oauth2_module: Ueberauth.Strategy.RingCentral.OAuth
 
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
 
   @doc """
-  Handles the initial redirect to the keycloak authentication page.
+  Handles the initial redirect to the ring_central authentication page.
 
-  To customize the scope (permissions) that are requested by keycloak include them as part of your url:
+  To customize the scope (permissions) that are requested by ring_central include them as part of your url:
 
-      "/auth/keycloak?scope=api read_user read_registry"
+      "/auth/ring_central?scope=api read_user read_registry"
 
-  You can also include a `state` param that keycloak will return to you.
+  You can also include a `state` param that ring_central will return to you.
   """
   @impl Ueberauth.Strategy
   def handle_request!(conn) do
@@ -102,8 +102,8 @@ defmodule Ueberauth.Strategy.Keycloak do
   end
 
   @doc """
-  Handles the callback from Keycloak. When there is a failure from Keycloak the failure is included in the
-  `ueberauth_failure` struct. Otherwise the information returned from Keycloak is returned in the `Ueberauth.Auth` struct.
+  Handles the callback from RingCentral. When there is a failure from RingCentral the failure is included in the
+  `ueberauth_failure` struct. Otherwise the information returned from RingCentral is returned in the `Ueberauth.Auth` struct.
   """
   @impl Ueberauth.Strategy
   def handle_callback!(%Plug.Conn{params: %{"code" => code, "state" => session_state}} = conn) do
@@ -116,7 +116,7 @@ defmodule Ueberauth.Strategy.Keycloak do
         error(token.other_params["error"], token.other_params["error_description"])
       ])
     else
-      put_private(conn, :keycloak_token, token)
+      put_private(conn, :ring_central_token, token)
     end
   end
 
@@ -127,16 +127,16 @@ defmodule Ueberauth.Strategy.Keycloak do
   end
 
   @doc """
-  Cleans up the private area of the connection used for passing the raw Keycloak response around during the callback.
+  Cleans up the private area of the connection used for passing the raw RingCentral response around during the callback.
   """
   @impl Ueberauth.Strategy
   def handle_cleanup!(conn) do
     conn
-    |> put_private(:keycloak_user, nil)
+    |> put_private(:ring_central_user, nil)
   end
 
   @doc """
-  Fetches the uid field from the Keycloak response. This defaults to the option `uid_field` which in-turn defaults to `id`
+  Fetches the uid field from the RingCentral response. This defaults to the option `uid_field` which in-turn defaults to `id`
   """
   @impl Ueberauth.Strategy
   def uid(conn) do
@@ -145,14 +145,14 @@ defmodule Ueberauth.Strategy.Keycloak do
       |> option(:uid_field)
       |> to_string
 
-    conn.private.keycloak_token.other_params[uid_field]
+    conn.private.ring_central_token.other_params[uid_field]
   end
 
   @doc """
-  Includes the credentials from the Keycloak response.
+  Includes the credentials from the RingCentral response.
   """
   @impl Ueberauth.Strategy
-  def credentials(%Plug.Conn{private: %{keycloak_token: token}}), do: credentials(token)
+  def credentials(%Plug.Conn{private: %{ring_central_token: token}}), do: credentials(token)
   def credentials(token) do
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, " ")
@@ -187,27 +187,27 @@ defmodule Ueberauth.Strategy.Keycloak do
   end
 
   @doc """
-  Stores the raw information (including the token) obtained from the Keycloak callback.
+  Stores the raw information (including the token) obtained from the RingCentral callback.
   """
   @impl Ueberauth.Strategy
   def extra(conn) do
     %Extra{
       raw_info: %{
-        token: conn.private.keycloak_token
+        token: conn.private.ring_central_token
       }
     }
   end
 
   @spec logout(Ueberauth.Auth.Credentials.t()) :: {:ok, OAuth2.Response} | {:error, any}
   def logout(credentials) do
-    Ueberauth.Strategy.Keycloak.OAuth.logout(credentials)
+    Ueberauth.Strategy.RingCentral.OAuth.logout(credentials)
   end
 
   @spec refresh_token(Ueberauth.Auth.Credentials.t()) :: Ueberauth.Auth.Credentials.t()
   def refresh_token(old_credentials) do
     old_credentials
     |> ueberauth_to_oauth_token()
-    |> Ueberauth.Strategy.Keycloak.OAuth.refresh_token()
+    |> Ueberauth.Strategy.RingCentral.OAuth.refresh_token()
     |> credentials()
   end
 

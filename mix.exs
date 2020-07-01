@@ -1,18 +1,18 @@
-defmodule UeberauthKeycloak.Mixfile do
+defmodule UeberauthRingCentral.Mixfile do
   use Mix.Project
 
   @version "0.2.0"
 
   def project do
     [
-      app: :ueberauth_keycloak_strategy,
+      app: :ueberauth_ring_central_strategy,
       version: @version,
       package: package(),
       elixir: "~> 1.3",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-      source_url: "https://github.com/Rukenshia/ueberauth_keycloak",
-      homepage_url: "https://github.com/Rukenshia/ueberauth_keycloak",
+      source_url: "https://github.com/gseddon/ueberauth_ring_central",
+      homepage_url: "https://github.com/gseddon/ueberauth_ring_central",
       description: description(),
       deps: deps(),
       docs: docs()
@@ -47,16 +47,16 @@ defmodule UeberauthKeycloak.Mixfile do
   end
 
   defp description do
-    "An Ueberauth strategy for using Keycloak to authenticate your users."
+    "An Ueberauth strategy for using RingCentral to authenticate your users."
   end
 
   defp package do
     [
-      name: "ueberauth_keycloak_strategy",
+      name: "ueberauth_ring_central_strategy",
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
-      maintainers: ["Jan C. <jan@ruken.pw>"],
+      maintainers: ["Gareth S. <gareth.seddon@gmail.com>"],
       licenses: ["MIT"],
-      links: %{GitHub: "https://github.com/Rukenshia/ueberauth_keycloak"}
+      links: %{GitHub: "https://github.com/gseddon/ueberauth_ring_central"}
     ]
   end
 end

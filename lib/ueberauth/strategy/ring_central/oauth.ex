@@ -1,12 +1,12 @@
-defmodule Ueberauth.Strategy.Keycloak.OAuth do
+defmodule Ueberauth.Strategy.RingCentral.OAuth do
   @moduledoc """
-  An implementation of OAuth2 for keycloak.
+  An implementation of OAuth2 for ring_central.
 
   To add your `client_id` and `client_secret` include these values in your configuration.
 
-      config :ueberauth, Ueberauth.Strategy.Keycloak.OAuth,
-        client_id: System.get_env("KEYCLOAK_CLIENT_ID"),
-        client_secret: System.get_env("KEYCLOAK_CLIENT_SECRET")
+      config :ueberauth, Ueberauth.Strategy.RingCentral.OAuth,
+        client_id: System.get_env("RING_CENTRAL_CLIENT_ID"),
+        client_secret: System.get_env("RING_CENTRAL_CLIENT_SECRET")
   """
   use OAuth2.Strategy
 
@@ -21,13 +21,13 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
   ]
 
   @doc """
-  Construct a client for requests to Keycloak.
+  Construct a client for requests to RingCentral.
 
   Optionally include any OAuth2 options here to be merged with the defaults.
 
-      Ueberauth.Strategy.Keycloak.OAuth.client(redirect_uri: "http://localhost:4000/auth/keycloak/callback")
+      Ueberauth.Strategy.RingCentral.OAuth.client(redirect_uri: "http://localhost:4000/auth/ring_central/callback")
 
-  This will be setup automatically for you in `Ueberauth.Strategy.Keycloak`.
+  This will be setup automatically for you in `Ueberauth.Strategy.RingCentral`.
   These options are only useful for usage outside the normal callback phase of Ueberauth.
   """
   def client(opts \\ []) do
@@ -39,14 +39,12 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
     OAuth2.Client.new(client_opts)
   end
 
-  @doc """
-  Fetches configuration for `Ueberauth.Strategy.Keycloak.OAuth` Strategy from `config.exs`
-
-  Also checks if at least `client_id` and `client_secret` are set, raising an error if not.
-  """
   defp config() do
+    # Fetches configuration for `Ueberauth.Strategy.RingCentral.OAuth` Strategy from `config.exs`
+    # Also checks if at least `client_id` and `client_secret` are set, raising an error if not.
+
     :ueberauth
-    |> Application.fetch_env!(Ueberauth.Strategy.Keycloak.OAuth)
+    |> Application.fetch_env!(Ueberauth.Strategy.RingCentral.OAuth)
     |> check_config_key_exists(:client_id)
     |> check_config_key_exists(:client_secret)
   end
@@ -61,7 +59,7 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
   end
 
   @doc """
-  Fetches `userinfo_url` for `Ueberauth.Strategy.Keycloak.OAuth` Strategy from `config.exs`.
+  Fetches `userinfo_url` for `Ueberauth.Strategy.RingCentral.OAuth` Strategy from `config.exs`.
   It will be used to get user profile information after an successful authentication.
   """
   def userinfo_url() do
@@ -147,13 +145,13 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
 
   defp check_config_key_exists(config, key) when is_list(config) do
     unless Keyword.has_key?(config, key) do
-      raise "#{inspect(key)} missing from config :ueberauth, Ueberauth.Strategy.Keycloak"
+      raise "#{inspect(key)} missing from config :ueberauth, Ueberauth.Strategy.RingCentral"
     end
 
     config
   end
 
   defp check_config_key_exists(_, _) do
-    raise "Config :ueberauth, Ueberauth.Strategy.Keycloak is not a keyword list, as expected"
+    raise "Config :ueberauth, Ueberauth.Strategy.RingCentral is not a keyword list, as expected"
   end
 end

@@ -14,8 +14,7 @@ defmodule UeberauthRingCentral.Mixfile do
       source_url: "https://github.com/gseddon/ueberauth_ring_central",
       homepage_url: "https://github.com/gseddon/ueberauth_ring_central",
       description: description(),
-      deps: deps(),
-      docs: docs()
+      deps: deps()
     ]
   end
 
@@ -30,15 +29,7 @@ defmodule UeberauthRingCentral.Mixfile do
   defp deps do
     [
       {:oauth2, "~> 0.9"},
-      {:ueberauth, "~> 0.4"},
-
-      # dev/test only dependencies
-      {:credo, "~> 0.8", only: [:dev, :test]},
-      {:exvcr, "~> 0.10.0", only: [:test]},
-
-      # docs dependencies
-      {:earmark, ">= 0.0.0", only: :dev},
-      {:ex_doc, ">= 0.0.0", only: :dev}
+      {:ueberauth, "~> 0.6"},
     ]
   end
 

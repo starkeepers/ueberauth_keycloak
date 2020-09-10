@@ -88,6 +88,7 @@ defmodule Ueberauth.Strategy.Keycloak do
 
   You can also include a `state` param that keycloak will return to you.
   """
+  @impl Ueberauth.Strategy
   def handle_request!(conn) do
     scopes = conn.params["scope"] || option(conn, :default_scope)
     opts = [redirect_uri: callback_url(conn), scope: scopes]
@@ -103,6 +104,7 @@ defmodule Ueberauth.Strategy.Keycloak do
   Handles the callback from Keycloak. When there is a failure from Keycloak the failure is included in the
   `ueberauth_failure` struct. Otherwise the information returned from Keycloak is returned in the `Ueberauth.Auth` struct.
   """
+  @impl Ueberauth.Strategy
   def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
     module = option(conn, :oauth2_module)
 
@@ -118,6 +120,7 @@ defmodule Ueberauth.Strategy.Keycloak do
   end
 
   @doc false
+  @impl Ueberauth.Strategy
   def handle_callback!(conn) do
     set_errors!(conn, [error("missing_code", "No code received")])
   end
@@ -125,6 +128,7 @@ defmodule Ueberauth.Strategy.Keycloak do
   @doc """
   Cleans up the private area of the connection used for passing the raw Keycloak response around during the callback.
   """
+  @impl Ueberauth.Strategy
   def handle_cleanup!(conn) do
     conn
     |> put_private(:keycloak_user, nil)
@@ -133,6 +137,7 @@ defmodule Ueberauth.Strategy.Keycloak do
   @doc """
   Fetches the uid field from the Keycloak response. This defaults to the option `uid_field` which in-turn defaults to `id`
   """
+  @impl Ueberauth.Strategy
   def uid(conn) do
     user =
       conn
@@ -145,10 +150,15 @@ defmodule Ueberauth.Strategy.Keycloak do
   @doc """
   Includes the credentials from the Keycloak response.
   """
-  def credentials(%Plug.Conn{private: %{keycloak_token: token}}), do: credentials(token)
-  def credentials(token) do
+  @impl Ueberauth.Strategy
+  def credentials(%Plug.Conn{private: %{
+                                keycloak_token: token,
+                                keycloak_user: keycloak_user
+                             }}), do: credentials(token, keycloak_user)
+  def credentials(token, user) do
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, ",")
+    applications = String.split(user["applications"], ",")
 
     %Credentials{
       token: token.access_token,
@@ -157,7 +167,10 @@ defmodule Ueberauth.Strategy.Keycloak do
       token_type: token.token_type,
       expires: !!token.expires_at,
       scopes: scopes,
-      other: %{refresh_expires_at: refresh_expires_at(token)}
+      other: %{
+        refresh_expires_at: refresh_expires_at(token),
+        applications: applications
+      }
     }
   end
 
@@ -182,11 +195,14 @@ defmodule Ueberauth.Strategy.Keycloak do
   @doc """
   Fetches the fields to populate the info section of the `Ueberauth.Auth` struct.
   """
+  @impl Ueberauth.Strategy
   def info(conn) do
     user = conn.private.keycloak_user
 
     %Info{
       name: user["name"],
+      first_name: user["given_name"],
+      last_name: user["family_name"],
       nickname: user["preferred_username"],
       email: user["email"],
       location: user["location"],
@@ -201,6 +217,7 @@ defmodule Ueberauth.Strategy.Keycloak do
   @doc """
   Stores the raw information (including the token) obtained from the Keycloak callback.
   """
+  @impl Ueberauth.Strategy
   def extra(conn) do
     %Extra{
       raw_info: %{
@@ -210,17 +227,18 @@ defmodule Ueberauth.Strategy.Keycloak do
     }
   end
 
-  @spec logout(Ueberauth.Auth.Credentials.t()) :: {:ok, OAuth2.Response} | {:error, any}
+  @spec logout(Ueberauth.Auth.Credentials.t()) :: {:ok, OAuth2.Response.t()} | {:error, any}
   def logout(credentials) do
     Ueberauth.Strategy.Keycloak.OAuth.logout(credentials)
   end
 
   @spec refresh_token(Ueberauth.Auth.Credentials.t()) :: Ueberauth.Auth.Credentials.t()
   def refresh_token(old_credentials) do
+    # TODO this will not return a useful refresh token for now (missing applications)
     old_credentials
     |> ueberauth_to_oauth_token()
     |> Ueberauth.Strategy.Keycloak.OAuth.refresh_token()
-    |> credentials()
+    |> credentials(%{"applications" => []}) # TODO where to get actual applications from.
   end
 
   defp fetch_user(conn, token) do

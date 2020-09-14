@@ -33,10 +33,6 @@ defmodule UeberauthRingCentral.Mixfile do
     ]
   end
 
-  defp docs do
-    [extras: ["README.md"]]
-  end
-
   defp description do
     "An Ueberauth strategy for using RingCentral to authenticate your users."
   end

@@ -93,9 +93,7 @@ defmodule Ueberauth.Strategy.RingCentral do
     opts = [redirect_uri: callback_url(conn), scope: scopes]
 
     opts =
-      # if conn.params["state"], do: Keyword.put(opts, :state, conn.params["state"]), else: opts
-      # TODO the application should add this itself
-      Keyword.put(opts, :state, "cat")
+      if conn.params["state"], do: Keyword.put(opts, :state, conn.params["state"]), else: opts
 
     module = option(conn, :oauth2_module)
     redirect!(conn, apply(module, :authorize_url!, [opts]))
@@ -106,8 +104,10 @@ defmodule Ueberauth.Strategy.RingCentral do
   `ueberauth_failure` struct. Otherwise the information returned from RingCentral is returned in the `Ueberauth.Auth` struct.
   """
   @impl Ueberauth.Strategy
-  def handle_callback!(%Plug.Conn{params: %{"code" => code, "state" => session_state}} = conn) do
+  def handle_callback!(%Plug.Conn{params: %{"code" => code} = params} = conn) do
     module = option(conn, :oauth2_module)
+
+    session_state = Map.get(params, "state")
 
     token = apply(module, :get_token!, [[code: code, redirect_uri: callback_url(conn), state: session_state]])
 

@@ -40,19 +40,16 @@ defmodule Ueberauth.Strategy.RingCentral.OAuth do
   end
 
   defp config() do
-    # Fetches configuration for `Ueberauth.Strategy.RingCentral.OAuth` Strategy from `config.exs`
-    # Also checks if at least `client_id` and `client_secret` are set, raising an error if not.
-
-    :ueberauth
-    |> Application.fetch_env!(Ueberauth.Strategy.RingCentral.OAuth)
-    |> check_config_key_exists(:client_id)
-    |> check_config_key_exists(:client_secret)
+    # note - we no longer call check_config_key_exists here as client_id and client_secret
+    # can be dynamically specified now
+    Application.fetch_env!(:ueberauth, Ueberauth.Strategy.RingCentral.OAuth)
   end
 
   @doc """
   Provides the authorize url for the request phase of Ueberauth. No need to call this usually.
   """
   def authorize_url!(params \\ [], opts \\ []) do
+
     opts
     |> client
     |> OAuth2.Client.authorize_url!(params)
@@ -116,8 +113,10 @@ defmodule Ueberauth.Strategy.RingCentral.OAuth do
 
   def get_token!(params \\ [], options \\ []) do
     headers = Keyword.get(options, :headers, [])
-    options = Keyword.get(options, :options, [])
+    # This was below 'options' before, but it seemed useless there - had to nest client_options another level
+    # deeper. Can put it back inf anything finds a use for it?
     client_options = Keyword.get(options, :client_options, [])
+    options = Keyword.get(options, :options, [])
     client = OAuth2.Client.get_token!(client(client_options), params, headers, options)
     client.token
   end
@@ -143,15 +142,15 @@ defmodule Ueberauth.Strategy.RingCentral.OAuth do
     |> OAuth2.Strategy.AuthCode.get_token(params, headers)
   end
 
-  defp check_config_key_exists(config, key) when is_list(config) do
+  def check_config_key_exists(config, key) when is_list(config) do
     unless Keyword.has_key?(config, key) do
-      raise "#{inspect(key)} missing from config :ueberauth, Ueberauth.Strategy.RingCentral"
+      raise "#{inspect(key)} missing from RingCentral config. Please put it in application or runtime config."
     end
 
     config
   end
 
-  defp check_config_key_exists(_, _) do
+  def check_config_key_exists(_, _) do
     raise "Config :ueberauth, Ueberauth.Strategy.RingCentral is not a keyword list, as expected"
   end
 end

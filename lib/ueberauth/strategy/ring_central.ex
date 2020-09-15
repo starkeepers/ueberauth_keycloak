@@ -88,16 +88,28 @@ defmodule Ueberauth.Strategy.RingCentral do
   You can also include a `state` param that ring_central will return to you.
   """
   @impl Ueberauth.Strategy
-  def handle_request!(conn) do
-    scopes = conn.params["scope"] || option(conn, :default_scope)
-    opts = [redirect_uri: callback_url(conn), scope: scopes]
+  def handle_request!(conn = %Plug.Conn{params: params}) do
+    scopes = params["scope"] || option(conn, :default_scope)
 
-    opts =
-      if conn.params["state"], do: Keyword.put(opts, :state, conn.params["state"]), else: opts
+    authorize_params = [
+      redirect_uri: callback_url(conn),
+      scope: scopes,
+      state: Map.get(params, "state")
+    ]
+
+    opts = build_passthrough_opts(conn)
 
     module = option(conn, :oauth2_module)
-    redirect!(conn, apply(module, :authorize_url!, [opts]))
+    redirect!(conn, apply(module, :authorize_url!, [authorize_params, opts]))
   end
+
+  def build_passthrough_opts(conn) do
+    []
+    |> opt_if_present(conn, :client_id)
+    |> opt_if_present(conn, :client_secret)
+    |> opt_if_present(conn, :site)
+  end
+
 
   @doc """
   Handles the callback from RingCentral. When there is a failure from RingCentral the failure is included in the
@@ -109,7 +121,11 @@ defmodule Ueberauth.Strategy.RingCentral do
 
     session_state = Map.get(params, "state")
 
-    token = apply(module, :get_token!, [[code: code, redirect_uri: callback_url(conn), state: session_state]])
+    token_params = [code: code, redirect_uri: callback_url(conn), state: session_state]
+
+    opts = [client_options: build_passthrough_opts(conn)]
+
+    token = apply(module, :get_token!, [token_params, opts])
 
     if token.access_token == nil do
       set_errors!(conn, [
@@ -212,6 +228,19 @@ defmodule Ueberauth.Strategy.RingCentral do
   end
 
   defp option(conn, key) do
+    # Dialyzer gives error because Ueberauth typespecs are straight up wrong :(
+    # Ueberauth.Strategy.Helpers:
+    # @spec options(Plug.Conn.t()) :: Keyword.t()
+    # should return Keyword.t() | nil instead
     Keyword.get(options(conn) || [], key, Keyword.get(default_options(), key))
+  end
+
+  @spec opt_if_present(Keyword.t(), Map.t(), atom()) :: Keyword.t()
+  defp opt_if_present(output, conn, key) do
+    # If an option is present in opts, merge it into the output (with atom key)
+    case option(conn, key) do
+      nil -> output
+      value -> Keyword.put(output, key, value)
+    end
   end
 end

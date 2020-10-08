@@ -89,21 +89,21 @@ defmodule Ueberauth.Strategy.RingCentral do
   """
   @impl Ueberauth.Strategy
   def handle_request!(conn = %Plug.Conn{params: params}) do
-    scopes = params["scope"] || option(conn, :default_scope)
 
     authorize_params = [
       redirect_uri: callback_url(conn),
-      scope: scopes,
-      state: Map.get(params, "state")
+      scope: params["scope"] || option(conn, :default_scope),
+      state: params["state"],
+      brandId: params["brand_id"]
     ]
 
-    opts = build_passthrough_opts(conn)
+    opts = build_client_passthrough_opts(conn)
 
     module = option(conn, :oauth2_module)
     redirect!(conn, apply(module, :authorize_url!, [authorize_params, opts]))
   end
 
-  def build_passthrough_opts(conn) do
+  def build_client_passthrough_opts(conn) do
     []
     |> opt_if_present(conn, :client_id)
     |> opt_if_present(conn, :client_secret)
@@ -123,7 +123,7 @@ defmodule Ueberauth.Strategy.RingCentral do
 
     token_params = [code: code, redirect_uri: callback_url(conn), state: session_state]
 
-    opts = [client_options: build_passthrough_opts(conn)]
+    opts = [client_options: build_client_passthrough_opts(conn)]
 
     token = apply(module, :get_token!, [token_params, opts])
 

@@ -17,7 +17,8 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
     token_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/token",
     userinfo_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo",
     logout_url: "http://localhost:8080/auth/realms/master/protocol/openid-connect/logout",
-    token_method: :post
+    token_method: :post,
+    serializer: Jason
   ]
 
   @doc """
@@ -37,14 +38,13 @@ defmodule Ueberauth.Strategy.Keycloak.OAuth do
       |> Keyword.merge(opts)
 
     OAuth2.Client.new(client_opts)
+    |> OAuth2.Client.put_serializer("application/json", client_opts[:serializer])
   end
 
-  @doc """
-  Fetches configuration for `Ueberauth.Strategy.Keycloak.OAuth` Strategy from `config.exs`
-
-  Also checks if at least `client_id` and `client_secret` are set, raising an error if not.
-  """
   defp config() do
+    # Fetches configuration for `Ueberauth.Strategy.Keycloak.OAuth` Strategy from `config.exs`
+    # Also checks if at least `client_id` and `client_secret` are set, raising an error if not.
+
     :ueberauth
     |> Application.fetch_env!(Ueberauth.Strategy.Keycloak.OAuth)
     |> check_config_key_exists(:client_id)

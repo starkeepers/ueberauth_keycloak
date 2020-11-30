@@ -158,7 +158,13 @@ defmodule Ueberauth.Strategy.Keycloak do
   def credentials(token, user) do
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, ",")
-    applications = String.split(user["applications"], ",")
+    applications =
+      case user["applications"] do
+        nil ->
+          raise RuntimeError, "Keycloak has not returned an `applications` key for this user." <>
+            " Please update Keycloak's configuration."
+        apps -> String.split(apps, ",")
+      end
 
     %Credentials{
       token: token.access_token,

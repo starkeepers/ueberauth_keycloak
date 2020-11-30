@@ -11,8 +11,8 @@ defmodule UeberauthKeycloak.Mixfile do
       elixir: "~> 1.3",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-      source_url: "https://github.com/Rukenshia/ueberauth_keycloak",
-      homepage_url: "https://github.com/Rukenshia/ueberauth_keycloak",
+      source_url: "https://github.com/DubberSoftware/dubber_ueberauth_plugin",
+      homepage_url: "https://github.com/DubberSoftware/dubber_ueberauth_plugin",
       description: description(),
       deps: deps(),
       docs: docs()
@@ -54,9 +54,9 @@ defmodule UeberauthKeycloak.Mixfile do
     [
       name: "ueberauth_keycloak_strategy",
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
-      maintainers: ["Jan C. <jan@ruken.pw>"],
+      maintainers: ["Gareth S. <gareth.seddon@dubber.net>"],
       licenses: ["MIT"],
-      links: %{GitHub: "https://github.com/Rukenshia/ueberauth_keycloak"}
+      links: %{GitHub: "https://github.com/DubberSoftware/dubber_ueberauth_plugin"}
     ]
   end
 end

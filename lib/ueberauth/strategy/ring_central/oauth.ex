@@ -37,6 +37,7 @@ defmodule Ueberauth.Strategy.RingCentral.OAuth do
       |> Keyword.merge(opts)
 
     OAuth2.Client.new(client_opts)
+    |> OAuth2.Client.put_serializer("application/json", Ueberauth.json_library())
   end
 
   defp config() do

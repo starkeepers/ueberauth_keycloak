@@ -11,9 +11,10 @@ defmodule UeberauthRingCentral.Mixfile do
       elixir: "~> 1.3",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-      source_url: "https://github.com/gseddon/ueberauth_ring_central",
-      homepage_url: "https://github.com/gseddon/ueberauth_ring_central",
+      source_url: "https://github.com/DubberSoftware/dubber_ueberauth_plugin/tree/ring_central",
+      homepage: "https://github.com/DubberSoftware/dubber_ueberauth_plugin/tree/ring_central",
       description: description(),
+      hex: hex(),
       deps: deps()
     ]
   end
@@ -43,7 +44,13 @@ defmodule UeberauthRingCentral.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["Gareth S. <gareth.seddon@gmail.com>"],
       licenses: ["MIT"],
-      links: %{GitHub: "https://github.com/gseddon/ueberauth_ring_central"}
+      links: %{GitHub: "https://github.com/DubberSoftware/dubber_ueberauth_plugin/tree/ring_central"}
+    ]
+  end
+
+  defp hex() do
+    [
+      api_url: "https://repo.hex.dubber.net/api/repos/dubber"
     ]
   end
 end

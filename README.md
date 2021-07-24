@@ -1,10 +1,10 @@
 # Überauth Keycloak
 
-> Keycloak OAuth2 strategy for Überauth.
+> Keycloak OAuth2 strategy for Überauth, updated for Phoenix 1.5+
 
 ## Acknowledgements
 
-This repository is based on the work of [mtchavez/ueberauth_keycloak](https://github.com/mtchavez/ueberauth_keycloak).
+This repository is based on the work of [mtchavez/ueberauth_keycloak](https://github.com/mtchavez/ueberauth_keycloak), via [gseddon/ueberauth_keycloak](https://github.com/gseddon/ueberauth_keycloak).
 
 ## Installation
 
@@ -16,20 +16,12 @@ This repository is based on the work of [mtchavez/ueberauth_keycloak](https://gi
     end
     ```
 
-1. Add the strategy to your applications:
-
-    ```elixir
-    def application do
-      [applications: [:ueberauth_keycloak_strategy]]
-    end
-    ```
-
 1. Add Keycloak to your Überauth configuration:
 
     ```elixir
     config :ueberauth, Ueberauth,
       providers: [
-        keycloak: {Ueberauth.Strategy.Keycloak, [default_scope: "read_user"]}
+        keycloak: {Ueberauth.Strategy.Keycloak, [default_scope: "email"]}
       ]
     ```
 
@@ -38,24 +30,15 @@ This repository is based on the work of [mtchavez/ueberauth_keycloak](https://gi
     ```elixir
     config :ueberauth, Ueberauth.Strategy.Keycloak.OAuth,
       client_id: System.get_env("KEYCLOAK_CLIENT_ID"),
-      client_secret: System.get_env("KEYCLOAK_CLIENT_SECRET"),
-      redirect_uri: System.get_env("KEYCLOAK_REDIRECT_URI")
+      client_secret: System.get_env("KEYCLOAK_CLIENT_SECRET")
+      site: "https://example.com/",
+      authorize_url: "https://example.com/auth/realms/myrealm/protocol/openid-connect/auth",
+      token_url: "https://example.com/auth/realms/buzz/myrealm/openid-connect/token",
+      userinfo_url: "https://example.com/auth/realms/myrealm/protocol/openid-connect/userinfo",
     ```
 
-1.  Include the Überauth plug in your controller:
 
-    ```elixir
-    defmodule MyApp.AuthController do
-      use MyApp.Web, :controller
-
-      pipeline :browser do
-        plug Ueberauth
-        ...
-       end
-    end
-    ```
-
-1.  Create the request and callback routes if you haven't already:
+1.  Create the request and callback routes:
 
     ```elixir
     scope "/auth", MyApp do

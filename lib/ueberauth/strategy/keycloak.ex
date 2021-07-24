@@ -161,8 +161,8 @@ defmodule Ueberauth.Strategy.Keycloak do
     applications =
       case user["applications"] do
         nil ->
-          raise RuntimeError, "Keycloak has not returned an `applications` key for this user." <>
-            " Please update Keycloak's configuration."
+          Logger.warn("Keycloak has not returned an `applications` key for this user. Please update Keycloak's configuration.")
+          []
         apps -> String.split(apps, ",")
       end
 

@@ -91,10 +91,9 @@ defmodule Ueberauth.Strategy.Keycloak do
   @impl Ueberauth.Strategy
   def handle_request!(conn) do
     scopes = conn.params["scope"] || option(conn, :default_scope)
-    opts = [redirect_uri: callback_url(conn), scope: scopes]
-
     opts =
-      if conn.params["state"], do: Keyword.put(opts, :state, conn.params["state"]), else: opts
+      [redirect_uri: callback_url(conn), scope: scopes]
+      |> with_state_param(conn)
 
     module = option(conn, :oauth2_module)
     redirect!(conn, apply(module, :authorize_url!, [opts]))
